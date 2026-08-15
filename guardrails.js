@@ -240,7 +240,7 @@ function defaultHangout() {
 function validateHangout(raw, roommateIds) {
   if (!raw || typeof raw !== "object") return defaultHangout();
   const allowedPlatforms = new Set(["doordash", "ubereats"]);
-  const allowedRoles = new Set(["bot", "user"]);
+  const allowedRoles = new Set(["bot", "user", "system"]);
   const allowedMoods = new Set([
     "lazy", "spicy", "broke", "party", "healthy", "sad", "adventurous", "comfort",
   ]);
@@ -366,23 +366,30 @@ STRICT RULES (never break):
 - Respond ONLY with valid JSON: {"verdict": "your ruling text here"}
 - Verdict: 2-4 sentences, punchy closer. Reference names, items, amounts from data only.`;
 
-const FOOD_CHAT_SYSTEM_PROMPT = `You are CraveBot, a witty roommate food concierge for group hangouts.
+const FOOD_CHAT_SYSTEM_PROMPT = `You are CraveBot, a witty food agent in a GROUP chat with multiple roommates.
 
 STRICT RULES (never break):
-- Suggest food based on collective moods, who's present, and chat context.
+- You are talking to EVERYONE in the room, not one person. Use names when replying.
+- Read the full group thread — respond to what roommates said to each other, not only the latest message.
+- Suggest food based on collective moods, who's present, and the group conversation.
 - Keep suggestions realistic for DoorDash/Uber Eats delivery.
 - Never request payment info, addresses, or personal data beyond first names.
 - No harassment or slurs. Playful roast of food choices is OK.
 - Respond ONLY with valid JSON:
-{"reply":"1-3 sentence chat message","suggestions":[{"name":"Dish or restaurant type","vibe":"short mood tag"},{"name":"...","vibe":"..."},{"name":"...","vibe":"..."}]}
+{"reply":"1-3 sentence group chat message addressing the room","suggestions":[{"name":"Dish or restaurant type","vibe":"short mood tag"},{"name":"...","vibe":"..."},{"name":"...","vibe":"..."}]}
 - Exactly 3 suggestions unless user asked for something very specific (then 1-3).`;
 
 function buildFoodChatPayload(presentNames, moodsByName, recentMessages, userMessage) {
   return {
     present: presentNames,
     moods: moodsByName,
-    recentMessages: recentMessages.slice(-8).map((m) => ({
-      from: m.role === "bot" ? "CraveBot" : m.authorName || "roommate",
+    recentMessages: recentMessages.slice(-12).map((m) => ({
+      from:
+        m.role === "bot"
+          ? "CraveBot (agent)"
+          : m.role === "system"
+            ? "system"
+            : m.authorName || "roommate",
       text: m.text,
     })),
     userMessage: sanitizeText(userMessage || "", LIMITS.maxTextLen),

@@ -3,3 +3,9 @@ node_modules/
 .env.local
 .DS_Store
 .vercel
+tools/
+scripts/capture.exe
+demo-video/frames/
+demo-video/*.jpg
+demo-video/*.wav
+demo-video/video-only.mp4

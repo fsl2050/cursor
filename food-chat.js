@@ -4,14 +4,14 @@
  */
 (function () {
   const MOODS = [
-    { id: "lazy", emoji: "😴", label: "Lazy", tags: ["pizza", "burgers", "ramen"] },
-    { id: "spicy", emoji: "🌶️", label: "Spicy", tags: ["thai", "hot chicken", "curry"] },
-    { id: "broke", emoji: "💸", label: "Broke", tags: ["tacos", "pizza deals", "fried rice"] },
-    { id: "party", emoji: "🎉", label: "Party", tags: ["wings", "sushi platter", "nachos"] },
-    { id: "healthy", emoji: "🥗", label: "Healthy", tags: ["salad bowl", "poke", "grain bowl"] },
-    { id: "sad", emoji: "😢", label: "Sad", tags: ["mac and cheese", "soup", "ice cream"] },
-    { id: "adventurous", emoji: "🌍", label: "Adventurous", tags: ["ethiopian", "korean bbq", "dim sum"] },
-    { id: "comfort", emoji: "🛋️", label: "Comfort", tags: ["meatloaf", "mashed potatoes", "grilled cheese"] },
+    { id: "lazy", emoji: "\uD83D\uDE34", label: "Lazy", tags: ["pizza", "burgers", "ramen"] },
+    { id: "spicy", emoji: "\uD83C\uDF36\uFE0F", label: "Spicy", tags: ["thai", "hot chicken", "curry"] },
+    { id: "broke", emoji: "\uD83D\uDCB8", label: "Broke", tags: ["tacos", "pizza deals", "fried rice"] },
+    { id: "party", emoji: "\uD83C\uDF89", label: "Party", tags: ["wings", "sushi platter", "nachos"] },
+    { id: "healthy", emoji: "\uD83E\uDD57", label: "Healthy", tags: ["salad bowl", "poke", "grain bowl"] },
+    { id: "sad", emoji: "\uD83D\uDE22", label: "Sad", tags: ["mac and cheese", "soup", "ice cream"] },
+    { id: "adventurous", emoji: "\uD83C\uDF0D", label: "Adventurous", tags: ["ethiopian", "korean bbq", "dim sum"] },
+    { id: "comfort", emoji: "\uD83D\uDECB\uFE0F", label: "Comfort", tags: ["meatloaf", "mashed potatoes", "grilled cheese"] },
   ];
 
   const DEMO_SUGGESTIONS = {
@@ -60,11 +60,17 @@
   const els = {
     sidebar: document.getElementById("food-chat-sidebar"),
     toggle: document.getElementById("chat-toggle"),
+    headerOpen: document.getElementById("chat-open-header"),
     closeBtn: document.getElementById("chat-close"),
+    chatIdentity: document.getElementById("chat-identity"),
+    chatAddForm: document.getElementById("chat-add-roommate"),
+    chatRoommateName: document.getElementById("chat-roommate-name"),
     presenceList: document.getElementById("presence-list"),
     quorumBadge: document.getElementById("quorum-badge"),
     moodPicker: document.getElementById("mood-picker"),
     messages: document.getElementById("chat-messages"),
+    participants: document.getElementById("chat-participants"),
+    sendingAs: document.getElementById("chat-sending-as"),
     suggestions: document.getElementById("chat-suggestions"),
     chatForm: document.getElementById("chat-form"),
     chatInput: document.getElementById("chat-input"),
@@ -123,6 +129,19 @@
     }
   }
 
+  function addSystemMessage(text) {
+    addMessage("system", text);
+  }
+
+  const ACCENT_COUNT = 6;
+
+  function authorAccentClass(authorId) {
+    if (!authorId) return "chat-accent-0";
+    let hash = 0;
+    for (let i = 0; i < authorId.length; i++) hash = (hash + authorId.charCodeAt(i) * (i + 1)) % ACCENT_COUNT;
+    return `chat-accent-${hash}`;
+  }
+
   function setChatStatus(msg, isError = false) {
     if (!els.chatStatus) return;
     els.chatStatus.classList.toggle("hidden", !msg);
@@ -159,25 +178,27 @@
   }
 
   function demoReply(userText) {
+    const names = RA.state.hangout.presentIds.map((id) => RA.getRoommate(id)?.name).filter(Boolean);
+    const room = names.length ? names.join(", ") : "the room";
     const tops = dominantMoods().map((m) => getMood(m)?.label).filter(Boolean);
     const vibe = tops.length ? tops.join(" + ") : "mystery";
     const lower = userText.toLowerCase();
     if (/cheap|broke|budget|afford/.test(lower)) {
-      return `Broke mode activated. With ${vibe} vibes in the room, I'd hunt deals — tacos, pizza promos, or fried rice. Vote below or say "surprise me" again.`;
+      return `Alright ${room} — broke mode activated. With ${vibe} vibes in the room, I'd hunt deals: tacos, pizza promos, or fried rice. Everyone vote below.`;
     }
     if (/healthy|salad|light|diet/.test(lower)) {
-      return `Health-conscious crew? Bold of you. Bowls, poke, or grilled options incoming — still compatible with ${vibe} energy.`;
+      return `Health-conscious crew? Bold of you, ${room}. Bowls, poke, or grilled options — still compatible with ${vibe} energy.`;
     }
     if (/spicy|hot|heat/.test(lower)) {
-      return `Turning up the heat for this ${vibe} squad. Thai, hot chicken, or curry could settle the debate.`;
+      return `Turning up the heat for ${room}. Thai, hot chicken, or curry could settle this ${vibe} debate.`;
     }
     if (/surprise|pick|decide|idk|don't know/.test(lower)) {
-      return `Reading the room: ${vibe} energy detected. I pulled 3 options — vote as a democracy or fight about it.`;
+      return `Reading the room (${room}): ${vibe} energy detected. I pulled 3 options — vote as a democracy or argue it out.`;
     }
     if (isQuorum()) {
-      return `Full house! Collective mood is ${vibe}. Check the suggestions — majority vote wins, then smash Order.`;
+      return `Full house — ${room} are all here! Collective mood: ${vibe}. Check the suggestions, vote, then order together.`;
     }
-    return `Noted: "${sanitizeText(userText, 60)}". Current vibe mix: ${vibe}. Need everyone in the room + moods for the official group order.`;
+    return `Got it from ${room}: "${sanitizeText(userText, 60)}". Current vibe mix: ${vibe}. Need everyone home + moods for the official group order.`;
   }
 
   async function grokReply(userText) {
@@ -253,37 +274,70 @@
 
   function buildAutoSuggestIntro() {
     const names = RA.state.hangout.presentIds.map((id) => RA.getRoommate(id)?.name).filter(Boolean);
-    const moodLabels = dominantMoods().map((m) => getMood(m)?.emoji + " " + getMood(m)?.label);
+    const moodLabels = dominantMoods().map((m) => getMood(m)?.label);
     if (isQuorum()) {
-      return `🎉 Quorum reached! ${names.join(", ")} are all here. Mood board: ${moodLabels.join(", ") || "undecided"}. Here are 3 group picks — vote, then order!`;
+      return `Quorum reached! ${names.join(", ")} are all here. Mood board: ${moodLabels.join(", ") || "undecided"}. Here are 3 group picks — vote together, then order!`;
     }
-    return `Hangout update: ${names.length} in the room. Moods: ${moodLabels.join(", ") || "pick one!"}. Suggestions when you're ready:`;
+    return `Hangout update for ${names.join(", ") || "the room"}. Moods: ${moodLabels.join(", ") || "pick one!"}. Suggestions when you're ready:`;
+  }
+
+  function renderParticipants() {
+    if (!els.participants) return;
+    const present = RA.state.hangout.presentIds
+      .map((id) => RA.getRoommate(id))
+      .filter(Boolean);
+    if (!present.length) {
+      els.participants.innerHTML = `<span class="chat-participant chat-participant-empty">No one home yet — tap Home to join group chat</span>`;
+      return;
+    }
+    els.participants.innerHTML = `
+      <span class="chat-participant chat-participant-agent">CraveBot</span>
+      ${present
+        .map((r) => {
+          const you = r.id === RA.getCheckedInId();
+          return `<span class="chat-participant ${authorAccentClass(r.id)} ${you ? "is-you" : ""}">${RA.escapeHtml(r.name)}${you ? " (you)" : ""}</span>`;
+        })
+        .join("")}`;
+  }
+
+  function renderIdentitySelect() {
+    if (!els.chatIdentity) return;
+    const you = RA.getCheckedInId();
+    const opts = RA.state.roommates
+      .map((r) => `<option value="${r.id}" ${r.id === you ? "selected" : ""}>${RA.escapeHtml(r.name)}</option>`)
+      .join("");
+    els.chatIdentity.innerHTML = `<option value="">— pick yourself —</option>${opts}`;
   }
 
   function renderPresence() {
     if (!els.presenceList || !ensureHangout()) return;
-    const you = RA.getCheckedInId();
 
     if (!RA.state.roommates.length) {
-      els.presenceList.innerHTML = `<p class="entry-meta">Add roommates first.</p>`;
+      els.presenceList.innerHTML = `<p class="entry-meta">Add at least 2 roommates above to start a group order.</p>`;
+      if (els.quorumBadge) {
+        els.quorumBadge.className = "quorum-badge quorum-no";
+        els.quorumBadge.textContent = "Add roommates first";
+      }
       return;
     }
+
+    const you = RA.getCheckedInId();
 
     els.presenceList.innerHTML = RA.state.roommates
       .map((r) => {
         const present = RA.state.hangout.presentIds.includes(r.id);
         const mood = RA.state.hangout.moods[r.id];
-        const moodLabel = mood ? getMood(mood)?.emoji : "";
+        const moodLabel = mood ? getMood(mood)?.label : "";
         const isYou = r.id === you;
-        const toggleBtn = isYou
-          ? present
-            ? `<button type="button" class="btn btn-sm btn-ghost" data-leave-room="${r.id}">Leave room</button>`
-            : `<button type="button" class="btn btn-sm btn-sky" data-join-room="${r.id}">I'm in the room</button>`
-          : "";
+        const status = present ? `<span class="home-badge">Home</span>` : `<span class="away-badge">Away</span>`;
+        const toggleBtn = present
+          ? `<button type="button" class="btn btn-sm btn-ghost" data-leave-room="${r.id}">Away</button>`
+          : `<button type="button" class="btn btn-sm btn-sky" data-join-room="${r.id}">Home</button>`;
         return `
         <div class="presence-row ${present ? "present" : ""}">
           <span class="presence-dot" aria-hidden="true"></span>
           <span class="presence-name">${RA.escapeHtml(r.name)}${isYou ? " (you)" : ""}</span>
+          ${status}
           <span class="presence-mood">${moodLabel}</span>
           ${toggleBtn}
         </div>`;
@@ -295,10 +349,10 @@
     if (els.quorumBadge) {
       if (isQuorum()) {
         els.quorumBadge.className = "quorum-badge quorum-yes";
-        els.quorumBadge.textContent = `✓ All ${n} roommates present — ready to order!`;
+        els.quorumBadge.textContent = `✓ All ${n} roommates home — ready to order!`;
       } else {
         els.quorumBadge.className = "quorum-badge quorum-no";
-        els.quorumBadge.textContent = `${p}/${n} in the room${n < 2 ? " (need 2+ roommates)" : ""}`;
+        els.quorumBadge.textContent = `${p}/${n} home${n < 2 ? " (need 2+ roommates)" : ""}`;
       }
     }
   }
@@ -310,7 +364,7 @@
     const yourMood = you ? RA.state.hangout.moods[you] : "";
 
     if (!present) {
-      els.moodPicker.innerHTML = `<p class="entry-meta">Check in to the room to set your mood.</p>`;
+      els.moodPicker.innerHTML = `<p class="entry-meta">Mark yourself <strong>Home</strong> first, then pick your mood.</p>`;
       return;
     }
 
@@ -320,7 +374,7 @@
         ${MOODS.map(
           (m) => `
           <button type="button" class="mood-chip ${yourMood === m.id ? "active" : ""}" data-mood="${m.id}">
-            ${m.emoji} ${m.label}
+            ${m.label}
           </button>`
         ).join("")}
       </div>`;
@@ -328,15 +382,28 @@
 
   function renderMessages() {
     if (!els.messages) return;
+    const you = RA.getCheckedInId();
+    if (!RA.state.hangout.messages.length) {
+      els.messages.innerHTML = `<p class="chat-empty">Group chat is empty. Mark roommates Home, switch <strong>Who are you?</strong>, then message each other and CraveBot.</p>`;
+      return;
+    }
     els.messages.innerHTML = RA.state.hangout.messages
       .map((m) => {
-        const author =
-          m.role === "bot"
-            ? "🤖 CraveBot"
-            : RA.escapeHtml(RA.getRoommate(m.authorId)?.name || "Roommate");
+        if (m.role === "system") {
+          return `<div class="chat-bubble system"><p>${RA.escapeHtml(m.text)}</p></div>`;
+        }
+        if (m.role === "bot") {
+          return `
+        <div class="chat-bubble agent">
+          <span class="chat-author">CraveBot · agent</span>
+          <p>${RA.escapeHtml(m.text)}</p>
+        </div>`;
+        }
+        const name = RA.escapeHtml(RA.getRoommate(m.authorId)?.name || "Roommate");
+        const isYou = m.authorId === you;
         return `
-        <div class="chat-bubble ${m.role}">
-          <span class="chat-author">${author}</span>
+        <div class="chat-bubble roommate ${authorAccentClass(m.authorId)} ${isYou ? "is-you" : ""}">
+          <span class="chat-author">${name}${isYou ? " · you" : ""}</span>
           <p>${RA.escapeHtml(m.text)}</p>
         </div>`;
       })
@@ -351,7 +418,7 @@
     const sugs = RA.state.hangout.suggestions;
 
     if (!sugs.length) {
-      els.suggestions.innerHTML = `<p class="entry-meta">Ask CraveBot or hit "Get suggestions" when moods are set.</p>`;
+      els.suggestions.innerHTML = `<p class="entry-meta">Set moods, then ask CraveBot or hit Get suggestions.</p>`;
       return;
     }
 
@@ -425,32 +492,107 @@
 
   function renderChat() {
     if (!ensureHangout()) return;
+    renderIdentitySelect();
     renderPresence();
     renderMoodPicker();
+    renderParticipants();
     renderMessages();
     renderSuggestions();
 
+    const you = RA.getCheckedInId();
+    const youName = you ? RA.getRoommate(you)?.name : "";
+    const youHome = you && RA.state.hangout.presentIds.includes(you);
     const canSuggest = RA.state.hangout.presentIds.length >= 1 && allPresentHaveMoods();
     if (els.suggestBtn) els.suggestBtn.disabled = !canSuggest || thinking;
-    if (els.chatInput) els.chatInput.disabled = thinking;
+    if (els.sendingAs) {
+      if (!you) {
+        els.sendingAs.textContent = "Pick who you are to join the group chat.";
+      } else if (!youHome) {
+        els.sendingAs.textContent = `${youName}: tap Home first to join the group chat.`;
+      } else {
+        els.sendingAs.textContent = `Sending as ${youName} — switch Who are you? for another roommate.`;
+      }
+    }
+    if (els.chatInput) {
+      els.chatInput.disabled = thinking;
+      els.chatInput.placeholder = youHome
+        ? "Message the group…"
+        : you
+          ? "Tap Home to join group chat"
+          : "Pick who you are above";
+    }
   }
 
+  function addRoommateFromSidebar(name) {
+    const clean = sanitizeName(name);
+    if (!clean) {
+      setChatStatus("Enter a valid name.", true);
+      return null;
+    }
+    if (typeof RA.addRoommate === "function") {
+      return RA.addRoommate(clean);
+    }
+    if (RA.state.roommates.length >= LIMITS.maxRoommates) {
+      setChatStatus("Roommate list is full.", true);
+      return null;
+    }
+    if (RA.state.roommates.some((r) => r.name.toLowerCase() === clean.toLowerCase())) {
+      setChatStatus("That roommate already exists.", true);
+      return null;
+    }
+    const id = RA.uid();
+    RA.state.roommates.push({
+      id,
+      name: clean,
+      payments: { venmo: "", paypal: "", cashapp: "", zelle: "", preferred: "venmo" },
+    });
+    RA.saveState();
+    if (RA.renderAll) RA.renderAll();
+    return id;
+  }
+
+  function selectIdentity(id) {
+    if (typeof RA.setCheckedInId === "function") {
+      RA.setCheckedInId(id);
+    } else if (id) {
+      localStorage.setItem("roommate-arbiter-checkin", id);
+    }
+    renderChat();
+  }
+
+  let chatReady = false;
+
   function initFoodChat() {
+    if (chatReady) return;
     if (!ensureHangout()) {
       setTimeout(initFoodChat, 50);
       return;
     }
 
-    if (!RA.state.hangout.messages.length) {
-      addMessage("bot", "Hey roomies! 👋 Pick yourself in the header, check in to the room, set your mood, and I'll help you agree on food.");
+    chatReady = true;
+
+    // Drop garbled messages from earlier broken UTF-8 bundle
+    if (
+      RA.state.hangout.messages.some((m) => /[\uFFFD]|â|ð/.test(m.text)) ||
+      RA.state.hangout.messages.some((m) => m.role === "bot" && /Step 1: add roommates/.test(m.text))
+    ) {
+      RA.state.hangout.messages = [];
+      RA.state.hangout.suggestions = [];
       RA.saveState();
     }
 
     renderChat();
 
-    els.toggle?.addEventListener("click", () => {
-      els.sidebar?.classList.toggle("open");
-    });
+    // Add roommate + identity select wired in app.js (works even if this file 404s)
+
+    function openChat() {
+      els.sidebar?.classList.add("open");
+      els.sidebar?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      window.setTimeout(() => els.chatInput?.focus(), 200);
+    }
+
+    els.toggle?.addEventListener("click", openChat);
+    els.headerOpen?.addEventListener("click", openChat);
     els.closeBtn?.addEventListener("click", () => {
       els.sidebar?.classList.remove("open");
     });
@@ -458,20 +600,22 @@
     els.presenceList?.addEventListener("click", (e) => {
       const join = e.target.dataset.joinRoom;
       const leave = e.target.dataset.leaveRoom;
-      const you = RA.getCheckedInId();
-      if (join && join === you) {
-        if (!RA.state.hangout.presentIds.includes(you)) {
-          RA.state.hangout.presentIds.push(you);
-          addMessage("user", "I'm in the room! 🏠", you);
-          addMessage("bot", `Welcome ${RA.getRoommate(you)?.name}! Set your mood so I know what you're craving.`);
+      const roommateId = join || leave;
+      if (!roommateId || !RA.getRoommate(roommateId)) return;
+      const name = RA.getRoommate(roommateId)?.name;
+
+      if (join) {
+        if (!RA.state.hangout.presentIds.includes(roommateId)) {
+          RA.state.hangout.presentIds.push(roommateId);
+          addSystemMessage(`${name} joined the group chat`);
           RA.saveState();
           renderChat();
         }
       }
-      if (leave && leave === you) {
-        RA.state.hangout.presentIds = RA.state.hangout.presentIds.filter((id) => id !== you);
-        delete RA.state.hangout.moods[you];
-        addMessage("user", "Stepping out for a bit.", you);
+      if (leave) {
+        RA.state.hangout.presentIds = RA.state.hangout.presentIds.filter((id) => id !== roommateId);
+        delete RA.state.hangout.moods[roommateId];
+        addSystemMessage(`${name} left the group chat`);
         RA.saveState();
         renderChat();
       }
@@ -483,7 +627,9 @@
       if (!mood || !you || !RA.state.hangout.presentIds.includes(you)) return;
       RA.state.hangout.moods[you] = mood;
       const m = getMood(mood);
-      addMessage("user", `Feeling ${m?.label} ${m?.emoji}`, you);
+      const youName = RA.getRoommate(you)?.name || "Someone";
+      addMessage("user", `I'm feeling ${m?.label}`, you);
+      addSystemMessage(`${youName} set mood: ${m?.label}`);
       RA.saveState();
       renderChat();
 
@@ -498,11 +644,11 @@
       const text = sanitizeText(els.chatInput.value, LIMITS.maxTextLen);
       if (!text) return;
       if (!you) {
-        setChatStatus("Pick who's you in the header first.", true);
+        setChatStatus("Pick who you are in the sidebar first.", true);
         return;
       }
       if (!RA.state.hangout.presentIds.includes(you)) {
-        setChatStatus("Check in to the room first.", true);
+        setChatStatus("Mark yourself Home first.", true);
         return;
       }
       addMessage("user", text, you);
@@ -522,7 +668,11 @@
         s.votes = s.votes.filter((id) => id !== you);
       }
       const target = RA.state.hangout.suggestions.find((s) => s.id === voteId);
-      if (target) target.votes.push(you);
+      if (target) {
+        target.votes.push(you);
+        const voter = RA.getRoommate(you)?.name || "Someone";
+        addMessage("user", `I vote for ${target.name}`, you);
+      }
       updatePickedFromVotes();
       RA.saveState();
       renderChat();
@@ -576,7 +726,7 @@
         at: new Date().toISOString(),
       });
 
-      addMessage("bot", `Order logged: ${picked.name} for ${RA.formatMoney(grandTotal)} split ${presentIds.length} ways. Bon appétit! 🍽️`);
+      addMessage("bot", `Order logged: ${picked.name} for ${RA.formatMoney(grandTotal)} split ${presentIds.length} ways. Bon appetit!`);
       els.orderTotal.value = "";
       els.orderFee.value = "";
       RA.saveState();
@@ -588,9 +738,10 @@
 
     els.clearHangout?.addEventListener("click", () => {
       RA.state.hangout = defaultHangout();
-      addMessage("bot", "Fresh hangout started. Check in when you're back in the room!");
       RA.saveState();
       renderChat();
+      setChatStatus("Hangout cleared. Fresh start.");
+      setTimeout(() => setChatStatus(""), 2500);
     });
 
     const origRenderAll = RA.renderAll;

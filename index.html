@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 <body>
   <div class="bg-blobs" aria-hidden="true">
@@ -28,6 +28,7 @@
         <h1>Roommate Arbiter</h1>
         <p class="tagline">Like Splitwise, but the judge is unhinged, unbiased, and absolutely sending you to Venmo jail.</p>
       </div>
+      <button type="button" id="chat-open-header" class="btn btn-coral chat-open-header">Chat</button>
     </div>
   </header>
 
@@ -284,74 +285,104 @@
         <div>
           <p class="eyebrow">Side quest</p>
           <h2 class="chat-title">🍜 CraveBot</h2>
-          <p class="chat-sub">Mood-based group food picks. All in? Check in, vote, order.</p>
+          <p class="chat-sub">Group food picks by mood. No GPS — you tap who's home.</p>
         </div>
         <button type="button" id="chat-close" class="chat-close" aria-label="Close chat">×</button>
       </div>
 
+      <div class="sidebar-scroll">
+      <ol class="chat-steps">
+        <li>Add roommates below</li>
+        <li>Pick who you are</li>
+        <li>Tap <strong>Home</strong> for everyone in the room</li>
+        <li>Set mood → chat → order</li>
+      </ol>
+
+      <div class="chat-section chat-setup">
+        <h3 class="chat-section-title">🧑‍🤝‍🧑 Roommates</h3>
+        <form id="chat-add-roommate" class="chat-add-form">
+          <input type="text" id="chat-roommate-name" placeholder="e.g. Dave, Alex…" maxlength="40" required />
+          <button type="submit" id="chat-add-btn" class="btn btn-sm btn-coral">+ Add</button>
+        </form>
+      </div>
+
       <div class="chat-section">
-        <h3 class="chat-section-title">🏠 Who's here?</h3>
-        <p class="entry-meta">Each roommate picks themselves above, then taps <strong>I'm in the room</strong>.</p>
+        <h3 class="chat-section-title">👤 Who are you?</h3>
+        <select id="chat-identity" class="chat-identity-select">
+          <option value="">— pick yourself —</option>
+        </select>
+      </div>
+
+      <div class="chat-section">
+        <h3 class="chat-section-title">🏠 Who's home?</h3>
+        <p class="entry-meta">Tap <strong>Home</strong> when someone is physically in the room (shared laptop/TV flow).</p>
         <div id="presence-list" class="presence-list"></div>
-        <p id="quorum-badge" class="quorum-badge quorum-no">0/0 in the room</p>
+        <p id="quorum-badge" class="quorum-badge quorum-no">0/0 home</p>
       </div>
 
       <div class="chat-section">
         <div id="mood-picker" class="mood-picker"></div>
       </div>
 
-      <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
-
-      <div id="chat-suggestions" class="chat-suggestions"></div>
-
-      <div id="chat-order-panel" class="chat-order-panel hidden">
-        <h3 class="chat-section-title">🛵 Place group order</h3>
-        <div class="order-launch-btns"></div>
-        <form id="chat-order-form" class="stack-form chat-order-form">
-          <div class="field-row">
-            <label>
-              Platform
-              <select id="chat-order-platform">
-                <option value="doordash">DoorDash</option>
-                <option value="ubereats">Uber Eats</option>
-              </select>
-            </label>
-            <label>
-              Who paid?
-              <select id="chat-order-payer"></select>
-            </label>
-            <label>
-              Total ($)
-              <input type="number" id="chat-order-total" min="0.01" step="0.01" placeholder="32.00" required />
-            </label>
-            <label>
-              Fees ($)
-              <input type="number" id="chat-order-fee" min="0" step="0.01" placeholder="5.00" />
-            </label>
-          </div>
-          <button type="submit" class="btn btn-sky btn-sm">Log group order & split</button>
-        </form>
+      <div class="chat-body">
+        <h3 class="chat-section-title">Group chat</h3>
+        <p class="entry-meta chat-group-hint">Everyone home can talk here. Switch <strong>Who are you?</strong> so each roommate sends as themselves.</p>
+        <div id="chat-participants" class="chat-participants" aria-label="In this group chat"></div>
+        <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
+        <div id="chat-suggestions" class="chat-suggestions"></div>
+        <div id="chat-order-panel" class="chat-order-panel hidden">
+          <h3 class="chat-section-title">🛵 Place group order</h3>
+          <div class="order-launch-btns"></div>
+          <form id="chat-order-form" class="stack-form chat-order-form">
+            <div class="field-row">
+              <label>
+                Platform
+                <select id="chat-order-platform">
+                  <option value="doordash">DoorDash</option>
+                  <option value="ubereats">Uber Eats</option>
+                </select>
+              </label>
+              <label>
+                Who paid?
+                <select id="chat-order-payer"></select>
+              </label>
+              <label>
+                Total ($)
+                <input type="number" id="chat-order-total" min="0.01" step="0.01" placeholder="32.00" required />
+              </label>
+              <label>
+                Fees ($)
+                <input type="number" id="chat-order-fee" min="0" step="0.01" placeholder="5.00" />
+              </label>
+            </div>
+            <button type="submit" class="btn btn-sky btn-sm">Log group order & split</button>
+          </form>
+        </div>
+      </div>
       </div>
 
-      <form id="chat-form" class="chat-input-row">
-        <select id="chat-mode" class="chat-mode-select" title="Bot mode">
-          <option value="demo">Demo bot</option>
-          <option value="grok">Live Grok</option>
-        </select>
-        <input type="text" id="chat-input" placeholder="e.g. something cheap and spicy…" maxlength="120" autocomplete="off" />
-        <button type="submit" class="btn btn-coral btn-sm">Send</button>
-      </form>
-      <button type="button" id="suggest-btn" class="btn btn-ghost btn-block">✨ Get suggestions from moods</button>
-      <button type="button" id="clear-hangout" class="btn btn-ghost btn-block btn-clear">Reset hangout</button>
-      <p id="chat-status" class="status-msg hidden"></p>
+      <div class="chat-footer">
+        <p id="chat-sending-as" class="chat-sending-as">Pick who you are to join the group chat.</p>
+        <form id="chat-form" class="chat-input-row">
+          <select id="chat-mode" class="chat-mode-select" title="Bot mode">
+            <option value="demo">Demo bot</option>
+            <option value="grok">Live Grok</option>
+          </select>
+          <input type="text" id="chat-input" placeholder="Message the group…" maxlength="120" autocomplete="off" />
+          <button type="submit" class="btn btn-coral btn-sm">Send</button>
+        </form>
+        <button type="button" id="suggest-btn" class="btn btn-ghost btn-block">✨ Get suggestions from moods</button>
+        <button type="button" id="clear-hangout" class="btn btn-ghost btn-block btn-clear">Reset hangout</button>
+        <p id="chat-status" class="status-msg hidden"></p>
+      </div>
     </aside>
   </div>
 
-  <button type="button" id="chat-toggle" class="chat-fab" aria-label="Open CraveBot">🍜</button>
+  <button type="button" id="chat-toggle" class="chat-fab" aria-label="Open CraveBot">Chat</button>
 
-  <script src="guardrails.js"></script>
-  <script src="app.js"></script>
-  <script src="delivery.js"></script>
-  <script src="food-chat.js"></script>
+  <script src="guardrails.js?v=8"></script>
+  <script src="app.js?v=13"></script>
+  <script src="delivery.js?v=7"></script>
+  <script src="demo-tour.js?v=2"></script>
 </body>
 </html>
