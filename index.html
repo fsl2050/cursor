@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" />
+  <title>Roommate Arbiter ✦ Grok's Court</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <span class="logo-emoji">⚖️</span>
+        <span class="logo-spark">✦</span>
+      </div>
+      <div>
+        <p class="eyebrow">Grok's petty crimes division</p>
+        <h1>Roommate Arbiter</h1>
+        <p class="tagline">Like Splitwise, but the judge is unhinged, unbiased, and absolutely sending you to Venmo jail.</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="checkin-bar" id="checkin-bar">
+    <div class="checkin-inner">
+      <label class="checkin-label">
+        <span>👤 Who's you?</span>
+        <select id="checkin-select">
+          <option value="">— pick your character —</option>
+        </select>
+      </label>
+      <p class="checkin-hint">Drop your payment deets below. When Grok says you owe money, one tap sends you to financial accountability.</p>
+    </div>
+  </section>
+
+  <div class="app-shell">
+    <div class="app-main">
+  <main class="layout">
+    <section class="panel panel-coral" id="roommates-panel">
+      <div class="panel-head">
+        <span class="panel-icon">🧑‍🤝‍🧑</span>
+        <div>
+          <h2>The Roomie Roster</h2>
+          <p>Everyone who shares the lease, the WiFi password, and questionable food ethics.</p>
+        </div>
+      </div>
+      <form id="roommate-form" class="inline-form">
+        <input type="text" id="roommate-name" placeholder="e.g. Dave (dishes guy)" required maxlength="40" />
+        <button type="submit" class="btn btn-coral">+ Add human</button>
+      </form>
+      <ul id="roommate-list" class="roommate-cards"></ul>
+    </section>
+
+    <section class="panel panel-mint" id="expenses-panel">
+      <div class="panel-head">
+        <span class="panel-icon">💸</span>
+        <div>
+          <h2>Receipts & Regrets</h2>
+          <p>Who bravely swiped the card? How much damage? For what unhinged haul?</p>
+        </div>
+      </div>
+      <form id="expense-form" class="stack-form">
+        <div class="field-row">
+          <label>
+            Who got financially brave?
+            <select id="expense-payer" required></select>
+          </label>
+          <label>
+            Damage report ($)
+            <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="42.50" required />
+          </label>
+        </div>
+        <label>
+          What chaos was purchased?
+          <input type="text" id="expense-desc" placeholder="Costco apocalypse, TP, 'emotional support snacks'" required maxlength="120" />
+        </label>
+        <button type="submit" class="btn btn-mint">🧾 Log the splurge</button>
+      </form>
+      <ul id="expense-list" class="entry-list" data-empty="Crickets. No receipts yet. Suspicious."></ul>
+    </section>
+
+    <section class="panel panel-lavender" id="meals-panel">
+      <div class="panel-head">
+        <span class="panel-icon">🍕</span>
+        <div>
+          <h2>Snacc Confessions</h2>
+          <p>Who inhale what? Be honest. Grok already knows about the 2am pizza.</p>
+        </div>
+      </div>
+      <form id="meal-form" class="stack-form">
+        <div class="field-row">
+          <label>
+            The culprit
+            <select id="meal-eater" required></select>
+          </label>
+          <label>
+            How much did they inhale?
+            <select id="meal-share" required>
+              <option value="1">Demolished it (100%)</option>
+              <option value="0.75">Mostly theirs (75%)</option>
+              <option value="0.5">Halfsies (50%)</option>
+              <option value="0.25">Just a nibble (25%)</option>
+              <option value="0.1">One shameful bite (10%)</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          What vanished from the fridge?
+          <input type="text" id="meal-item" placeholder="Pizza, eggs, someone's labeled yogurt" required maxlength="120" />
+        </label>
+        <label>
+          Tied to which receipt?
+          <select id="meal-expense">
+            <option value="">N/A — split the vibes equally</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn-lavender">🍴 Confess consumption</button>
+      </form>
+      <ul id="meal-list" class="entry-list" data-empty="No snacc crimes logged. Yet."></ul>
+    </section>
+
+    <section class="panel panel-pink panel-gripes" id="gripes-panel">
+      <div class="panel-head">
+        <span class="panel-icon">🫖</span>
+        <div>
+          <h2>The Grievance Box</h2>
+          <p>Official venue for bitching. Grok reads every word. Choose your words — or don't.</p>
+        </div>
+      </div>
+      <form id="gripe-form" class="stack-form">
+        <label>
+          Who's venting?
+          <select id="gripe-author" required></select>
+        </label>
+        <label>
+          Spill the tea ☕
+          <textarea id="gripe-text" rows="3" placeholder="e.g. 'Dave ate my labeled yogurt AGAIN and said the label was 'suggestive''" required maxlength="280"></textarea>
+          <span class="char-count" id="gripe-count">0/280</span>
+        </label>
+        <button type="submit" class="btn btn-pink">📢 Submit grievance</button>
+      </form>
+      <ul id="gripe-list" class="gripe-list" data-empty="Peace and quiet so far. Unsettling."></ul>
+    </section>
+
+    <section class="panel panel-delivery panel-sky" id="delivery-panel">
+      <div class="panel-head">
+        <span class="panel-icon">🛵</span>
+        <div>
+          <h2>Restock Express</h2>
+          <p>Someone ate the last of it? Log the crime, launch DoorDash or Uber Eats, then charge the culprits.</p>
+        </div>
+      </div>
+
+      <form id="missing-form" class="stack-form">
+        <div class="field-row">
+          <label>
+            What's gone?
+            <input type="text" id="missing-item" placeholder="Milk, eggs, labeled yogurt" required maxlength="120" />
+          </label>
+          <label>
+            Qty
+            <input type="number" id="missing-qty" min="1" max="99" value="1" />
+          </label>
+          <label>
+            Est. cost ($)
+            <input type="number" id="missing-est" min="0.01" step="0.01" placeholder="5.99" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label>
+            Who noticed?
+            <select id="missing-reporter" required></select>
+          </label>
+          <div class="culprit-field">
+            <span class="field-label">Who's on the hook?</span>
+            <div id="missing-culprits" class="culprit-chips"></div>
+            <button type="button" id="auto-culprit-btn" class="btn btn-sm btn-ghost">🔍 Auto-detect from snacc logs</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-sky">📦 Log missing item</button>
+      </form>
+
+      <ul id="missing-list" class="entry-list missing-list"></ul>
+
+      <div id="delivery-cart" class="delivery-cart"></div>
+
+      <form id="order-form" class="stack-form order-form">
+        <h3 class="subsection-title">After you order — log the damage</h3>
+        <div class="field-row">
+          <label>
+            Platform
+            <select id="order-platform">
+              <option value="doordash">DoorDash</option>
+              <option value="ubereats">Uber Eats</option>
+            </select>
+          </label>
+          <label>
+            Who paid?
+            <select id="order-payer" required></select>
+          </label>
+          <label>
+            Order total ($)
+            <input type="number" id="order-total" min="0.01" step="0.01" placeholder="24.50" required />
+          </label>
+          <label>
+            Delivery/tax/fees ($)
+            <input type="number" id="order-fee" min="0" step="0.01" placeholder="6.00" />
+          </label>
+        </div>
+        <button type="submit" class="btn btn-sky">💸 Charge culprits & log expense</button>
+      </form>
+
+      <div id="charge-panel" class="charge-panel hidden"></div>
+      <div id="delivery-history" class="delivery-history"></div>
+      <p id="delivery-status" class="status-msg hidden"></p>
+    </section>
+
+    <section class="panel panel-verdict panel-sun" id="verdict-panel">
+      <div class="panel-head">
+        <span class="panel-icon">🔨</span>
+        <div>
+          <h2>Summon the Arbiter</h2>
+          <p>Grok puts on the robe. Someone's getting roasted. Someone's getting a Venmo request.</p>
+        </div>
+      </div>
+
+      <div class="mode-toggle">
+        <label class="toggle toggle-demo">
+          <input type="radio" name="judge-mode" value="demo" checked />
+          <span>🎭 Offline roast bot</span>
+        </label>
+        <label class="toggle toggle-grok">
+          <input type="radio" name="judge-mode" value="grok" />
+          <span>🧠 Live Grok (real chaos)</span>
+        </label>
+      </div>
+
+      <label class="grok-consent hidden" id="grok-consent-label">
+        <input type="checkbox" id="grok-consent" />
+        <span>Yep — send names + receipts to Grok. Payment info stays locked in the vault. 🔒</span>
+      </label>
+
+      <details class="privacy-panel" id="privacy-panel">
+        <summary>🔐 Data vibes — zero shadow IT</summary>
+        <div id="privacy-content" class="privacy-content"></div>
+      </details>
+
+      <button id="judge-btn" class="btn btn-gavel" type="button">
+        <span class="gavel">⚡</span> Drop the Verdict
+      </button>
+
+      <div id="verdict-output" class="verdict hidden">
+        <div class="verdict-header">
+          <span class="verdict-badge">📜 Official Drama</span>
+          <p class="verdict-meta" id="verdict-meta"></p>
+        </div>
+        <blockquote id="verdict-text" class="verdict-text"></blockquote>
+        <div id="verdict-splits" class="splits"></div>
+        <div id="verdict-payments" class="payments-panel hidden"></div>
+        <div id="verdict-balances" class="balances"></div>
+      </div>
+
+      <p id="judge-status" class="status-msg hidden"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>For roommates who argue like lawyers and math like toddlers. <strong>Not real legal advice.</strong> Grok's word is law only in the kitchen.</p>
+  </footer>
+    </div>
+
+    <aside id="food-chat-sidebar" class="food-chat-sidebar" aria-label="CraveBot food chat">
+      <div class="chat-header">
+        <div>
+          <p class="eyebrow">Side quest</p>
+          <h2 class="chat-title">🍜 CraveBot</h2>
+          <p class="chat-sub">Mood-based group food picks. All in? Check in, vote, order.</p>
+        </div>
+        <button type="button" id="chat-close" class="chat-close" aria-label="Close chat">×</button>
+      </div>
+
+      <div class="chat-section">
+        <h3 class="chat-section-title">🏠 Who's here?</h3>
+        <p class="entry-meta">Each roommate picks themselves above, then taps <strong>I'm in the room</strong>.</p>
+        <div id="presence-list" class="presence-list"></div>
+        <p id="quorum-badge" class="quorum-badge quorum-no">0/0 in the room</p>
+      </div>
+
+      <div class="chat-section">
+        <div id="mood-picker" class="mood-picker"></div>
+      </div>
+
+      <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
+
+      <div id="chat-suggestions" class="chat-suggestions"></div>
+
+      <div id="chat-order-panel" class="chat-order-panel hidden">
+        <h3 class="chat-section-title">🛵 Place group order</h3>
+        <div class="order-launch-btns"></div>
+        <form id="chat-order-form" class="stack-form chat-order-form">
+          <div class="field-row">
+            <label>
+              Platform
+              <select id="chat-order-platform">
+                <option value="doordash">DoorDash</option>
+                <option value="ubereats">Uber Eats</option>
+              </select>
+            </label>
+            <label>
+              Who paid?
+              <select id="chat-order-payer"></select>
+            </label>
+            <label>
+              Total ($)
+              <input type="number" id="chat-order-total" min="0.01" step="0.01" placeholder="32.00" required />
+            </label>
+            <label>
+              Fees ($)
+              <input type="number" id="chat-order-fee" min="0" step="0.01" placeholder="5.00" />
+            </label>
+          </div>
+          <button type="submit" class="btn btn-sky btn-sm">Log group order & split</button>
+        </form>
+      </div>
+
+      <form id="chat-form" class="chat-input-row">
+        <select id="chat-mode" class="chat-mode-select" title="Bot mode">
+          <option value="demo">Demo bot</option>
+          <option value="grok">Live Grok</option>
+        </select>
+        <input type="text" id="chat-input" placeholder="e.g. something cheap and spicy…" maxlength="120" autocomplete="off" />
+        <button type="submit" class="btn btn-coral btn-sm">Send</button>
+      </form>
+      <button type="button" id="suggest-btn" class="btn btn-ghost btn-block">✨ Get suggestions from moods</button>
+      <button type="button" id="clear-hangout" class="btn btn-ghost btn-block btn-clear">Reset hangout</button>
+      <p id="chat-status" class="status-msg hidden"></p>
+    </aside>
+  </div>
+
+  <button type="button" id="chat-toggle" class="chat-fab" aria-label="Open CraveBot">🍜</button>
+
+  <script src="guardrails.js"></script>
+  <script src="app.js"></script>
+  <script src="delivery.js"></script>
+  <script src="food-chat.js"></script>
+</body>
+</html>

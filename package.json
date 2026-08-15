@@ -1,0 +1,12 @@
+{
+  "name": "roommate-arbiter",
+  "version": "1.0.0",
+  "description": "Splitwise meets Grok — the witty judge of roommate expenses",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
