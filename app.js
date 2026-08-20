@@ -10,6 +10,7 @@ const PAYMENT_PROVIDERS = [
 
 const state = loadState();
 let checkedInId = localStorage.getItem(CHECKIN_KEY) || "";
+let lastVerdict = null;
 if (checkedInId && !state.roommates.some((r) => r.id === checkedInId)) {
   checkedInId = "";
   localStorage.removeItem(CHECKIN_KEY);
@@ -56,6 +57,7 @@ const els = {
   verdictSplits: document.getElementById("verdict-splits"),
   verdictPayments: document.getElementById("verdict-payments"),
   verdictBalances: document.getElementById("verdict-balances"),
+  pdfDownloadBtn: document.getElementById("pdf-download-btn"),
   judgeStatus: document.getElementById("judge-status"),
   grokConsentLabel: document.getElementById("grok-consent-label"),
   grokConsent: document.getElementById("grok-consent"),
@@ -509,6 +511,7 @@ async function grokVerdict() {
 }
 
 function showVerdict(result) {
+  lastVerdict = result;
   els.verdictOutput.classList.remove("hidden");
   els.verdictMeta.textContent = `Ruled by ${result.judge} · ${new Date().toLocaleString()}`;
   els.verdictText.textContent = result.verdict;
@@ -897,6 +900,28 @@ els.judgeBtn.addEventListener("click", async () => {
   } finally {
     els.judgeBtn.classList.remove("loading");
     els.judgeBtn.disabled = false;
+  }
+});
+
+els.pdfDownloadBtn?.addEventListener("click", () => {
+  if (!lastVerdict) {
+    setStatus("Drop a verdict first, then download the PDF.", true);
+    return;
+  }
+  if (!window.RAPdf?.downloadVerdictPdf) {
+    setStatus("PDF export failed to load. Refresh and try again.", true);
+    return;
+  }
+  try {
+    window.RAPdf.downloadVerdictPdf(lastVerdict, {
+      roommates: state.roommates,
+      expenses: state.expenses,
+      meals: state.meals,
+      gripes: state.gripes || [],
+    });
+    setStatus("PDF downloaded — share it in the group chat of accountability.");
+  } catch (err) {
+    setStatus(err.message || "Could not build the PDF.", true);
   }
 });
 

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
 </head>
 <body>
   <div class="bg-blobs" aria-hidden="true">
@@ -269,6 +269,11 @@
         <div id="verdict-splits" class="splits"></div>
         <div id="verdict-payments" class="payments-panel hidden"></div>
         <div id="verdict-balances" class="balances"></div>
+        <div class="verdict-actions">
+          <button type="button" id="pdf-download-btn" class="btn btn-pdf">
+            📄 Download verdict PDF
+          </button>
+        </div>
       </div>
 
       <p id="judge-status" class="status-msg hidden"></p>
@@ -381,7 +386,8 @@
   <button type="button" id="chat-toggle" class="chat-fab" aria-label="Open CraveBot">Chat</button>
 
   <script src="guardrails.js?v=8"></script>
-  <script src="app.js?v=13"></script>
+  <script src="pdf-export.js?v=1"></script>
+  <script src="app.js?v=14"></script>
   <script src="delivery.js?v=7"></script>
   <script src="demo-tour.js?v=2"></script>
 </body>
