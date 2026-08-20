@@ -13,6 +13,7 @@ Built for the Cursor hackathon, Aug 15 2026.
 - **Check-in** — select who you are; get one-click pay links for what you owe
 - **Demo mode** — works offline with built-in witty rulings (no API key needed)
 - **Live Grok mode** — real xAI Grok judgments via server API
+- **Verdict PDF** — download a printable settlement PDF after the Arbiter rules
 - **Restock Express** — log missing pantry items, auto-detect culprits from meal logs, launch DoorDash/Uber Eats to reorder, then split the bill and charge culprits via Venmo/PayPal/Cash App/Zelle
 - **CraveBot sidebar** — mood-based group food chat: roommates check in their presence, set vibes, vote on suggestions, and place a group DoorDash/Uber Eats order split among everyone present
 

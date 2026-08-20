@@ -906,6 +906,32 @@ select:focus {
   margin: 1rem 0;
 }
 
+.verdict-actions {
+  margin-top: 1.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.btn-pdf {
+  background: linear-gradient(135deg, #1f2a44, #2d4a6f);
+  color: #f5f7fb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+}
+
+.btn-pdf:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.btn-pdf:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
 .splits, .balances { display: grid; gap: 0.5rem; margin-top: 1rem; }
 
 .splits h3, .balances h3 {
